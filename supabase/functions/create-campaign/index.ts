@@ -17,7 +17,8 @@ type Body = {
 
 type LeadRow = Lead & { id: string };
 
-const THROTTLE_SECONDS = 0;
+const WAVE_SIZE = 50;
+const WAVE_GAP_MS = 30 * 60 * 1000;
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -81,7 +82,7 @@ serve(async (req: Request) => {
         lead_id: lead.id,
         subject: rendered.subject,
         body: rendered.body,
-        scheduled_at: new Date(now + i * THROTTLE_SECONDS * 1000).toISOString(),
+        scheduled_at: new Date(now + Math.floor(i / WAVE_SIZE) * WAVE_GAP_MS).toISOString(),
         status: "queued",
       };
     });

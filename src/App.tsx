@@ -29,6 +29,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 export default function App() {
   const [campaigns, setCampaigns] = useState<CampaignSummary[]>([]);
+  const [dashboardBusy, setDashboardBusy] = useState(true);
+  const dashboardFirstDone = useRef(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailRows, setDetailRows] = useState<CampaignSendRow[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -54,6 +56,11 @@ export default function App() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load campaigns";
       setError(message);
+    } finally {
+      if (!dashboardFirstDone.current) {
+        dashboardFirstDone.current = true;
+        setDashboardBusy(false);
+      }
     }
   }, []);
 
@@ -157,12 +164,20 @@ export default function App() {
             Import your outreach list, queue personalized campaigns, and track open rates as emails go out.
           </p>
         </div>
-        <div className="stats-grid">
-          <StatCard label="Leads in queue" value={stats.queued} />
-          <StatCard label="Sent" value={stats.sent} />
-          <StatCard label="Opened" value={`${stats.opened} (${formatPercent(stats.openRate)})`} />
-          <StatCard label="Clicked website" value={`${stats.clicked} (${formatPercent(stats.clickRate)})`} />
-          <StatCard label="Failed" value={stats.failed} />
+        <div className="stats-launch">
+          {dashboardBusy ? (
+            <div className="stats-loading-overlay" role="status" aria-live="polite">
+              <span className="spinner" aria-hidden />
+              <span>Loading metrics</span>
+            </div>
+          ) : null}
+          <div className={`stats-grid${dashboardBusy ? " stats-grid-pending" : ""}`}>
+            <StatCard label="Leads in queue" value={stats.queued} />
+            <StatCard label="Sent" value={stats.sent} />
+            <StatCard label="Opened" value={`${stats.opened} (${formatPercent(stats.openRate)})`} />
+            <StatCard label="Clicked website" value={`${stats.clicked} (${formatPercent(stats.clickRate)})`} />
+            <StatCard label="Failed" value={stats.failed} />
+          </div>
         </div>
       </section>
 

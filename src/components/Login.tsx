@@ -34,7 +34,14 @@ export default function Login({ gateError }: Props) {
         {combined ? <p className="form-error">{combined}</p> : null}
 
         <button type="button" className="primary-btn full" onClick={google} disabled={submitting}>
-          {submitting ? "Redirecting" : "Continue with Google"}
+          {submitting ? (
+            <>
+              <span className="spinner spinner-inline" aria-hidden />
+              Opening Google
+            </>
+          ) : (
+            "Continue with Google"
+          )}
         </button>
       </div>
     </main>

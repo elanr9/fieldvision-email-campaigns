@@ -81,12 +81,27 @@ export default function CampaignDetail({ campaign, rows, loading, lastRefreshedA
             </button>
           ) : null}
           <div className="detail-refresh">
-            {loading ? "Loading" : lastRefreshedAt ? `Updated ${fmtDate(lastRefreshedAt.toISOString())}` : ""}
+            {loading ? (
+              <>
+                <span className="spinner spinner-inline" aria-hidden />
+                <span>Updating</span>
+              </>
+            ) : lastRefreshedAt ? (
+              `Updated ${fmtDate(lastRefreshedAt.toISOString())}`
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>
 
       <div className="detail-table-wrap">
+        {loading ? (
+          <div className="table-loading-overlay" role="status" aria-live="polite">
+            <span className="spinner" aria-hidden />
+            <span>Updating leads</span>
+          </div>
+        ) : null}
         <table className="detail-table">
           <thead>
             <tr>

@@ -46,7 +46,10 @@ function AuthGate() {
   if (!ready) {
     return (
       <main className="auth-screen">
-        <p className="auth-sub">Loading</p>
+        <div className="loading-state" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden />
+          <p className="loading-state-label">Signing you in</p>
+        </div>
       </main>
     );
   }

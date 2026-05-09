@@ -49,6 +49,96 @@
   text-align: center;
 }
 
+.loading-state {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 280px;
+  padding: 32px 36px;
+  text-align: center;
+  width: 100%;
+}
+
+.loading-state-label {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.spinner {
+  animation: spin 0.7s linear infinite;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  border-top-color: var(--accent);
+  display: inline-block;
+  height: 28px;
+  width: 28px;
+}
+
+.spinner-inline {
+  height: 16px;
+  width: 16px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.stats-launch {
+  position: relative;
+}
+
+.stats-loading-overlay {
+  align-items: center;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border-radius: 18px;
+  bottom: 0;
+  color: var(--muted);
+  display: flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 10px;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.stats-grid-pending {
+  filter: blur(1px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.table-loading-overlay {
+  align-items: center;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  border-radius: 11px;
+  bottom: 0;
+  color: var(--muted);
+  display: flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 10px;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 3;
+}
+
 .hero {
   background: var(--card);
   border: 1px solid var(--border);
@@ -169,6 +259,7 @@
   background: var(--accent);
   border: 1px solid var(--accent);
   color: #fff;
+  gap: 8px;
 }
 
 .primary-btn:hover:not(:disabled) {
@@ -384,8 +475,11 @@
 }
 
 .detail-refresh {
+  align-items: center;
   color: var(--muted);
+  display: flex;
   font-size: 12px;
+  gap: 8px;
   white-space: nowrap;
 }
 
@@ -406,6 +500,7 @@
 }
 
 .detail-table-wrap {
+  position: relative;
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 12px;
