@@ -1,32 +1,65 @@
-import { StrictMode, useState } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import Login from './components/Login.tsx'
+import { StrictMode, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import type { Session } from "@supabase/supabase-js";
+import "./index.css";
+import App from "./App.tsx";
+import Login from "./components/Login.tsx";
+import { supabase } from "./lib/supabase";
 
-const AUTH_KEY = 'fv_authed'
+const ALLOWED_DOMAIN = (import.meta.env.VITE_ALLOWED_AUTH_DOMAIN ?? "").trim().toLowerCase();
 
 function AuthGate() {
-  const [authed, setAuthed] = useState<boolean>(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(AUTH_KEY) === '1'
-  )
+  const [ready, setReady] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [gateError, setGateError] = useState<string | null>(null);
 
-  if (!authed) {
+  useEffect(() => {
+    const validate = async (s: Session | null) => {
+      setGateError(null);
+      if (!s?.user?.email) {
+        setSession(null);
+        return;
+      }
+      if (ALLOWED_DOMAIN && !s.user.email.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`)) {
+        await supabase.auth.signOut();
+        setSession(null);
+        setGateError(`Use your @${ALLOWED_DOMAIN} Google account.`);
+        return;
+      }
+      setSession(s);
+    };
+
+    void supabase.auth.getSession().then(({ data: { session: initial } }) => {
+      void validate(initial);
+      setReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, next) => {
+      void validate(next);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!ready) {
     return (
-      <Login
-        onSuccess={() => {
-          window.localStorage.setItem(AUTH_KEY, '1')
-          setAuthed(true)
-        }}
-      />
-    )
+      <main className="auth-screen">
+        <p className="auth-sub">Loading</p>
+      </main>
+    );
   }
 
-  return <App />
+  if (!session) {
+    return <Login gateError={gateError} />;
+  }
+
+  return <App />;
 }
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthGate />
   </StrictMode>,
-)
+);

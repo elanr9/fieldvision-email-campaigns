@@ -11,6 +11,7 @@ import {
   type CampaignSendRow,
   type CampaignSummary,
 } from "./lib/api";
+import { supabase } from "./lib/supabase";
 
 function formatPercent(rate: number): string {
   if (!Number.isFinite(rate)) return "0%";
@@ -145,7 +146,12 @@ export default function App() {
     <main className="app-shell">
       <section className="hero">
         <div className="hero-text">
-          <p className="eyebrow">FieldVision</p>
+          <div className="hero-top">
+            <p className="eyebrow">FieldVision</p>
+            <button type="button" className="ghost-btn" onClick={() => void supabase.auth.signOut()}>
+              Sign out
+            </button>
+          </div>
           <h1>FieldVision Outreach CRM</h1>
           <p className="hero-copy">
             Import your outreach list, queue personalized campaigns, and track open rates as emails go out.

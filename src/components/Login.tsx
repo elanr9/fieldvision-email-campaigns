@@ -1,71 +1,42 @@
-import { useState, type FormEvent } from "react";
-
-const AUTH_EMAIL = (import.meta.env.VITE_AUTH_EMAIL ?? "").trim().toLowerCase();
-const AUTH_PASSWORD = import.meta.env.VITE_AUTH_PASSWORD ?? "";
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
 
 type Props = {
-  onSuccess: () => void;
+  gateError: string | null;
 };
 
-export default function Login({ onSuccess }: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login({ gateError }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!AUTH_EMAIL || !AUTH_PASSWORD) {
-      setError("Auth not configured. Set VITE_AUTH_EMAIL and VITE_AUTH_PASSWORD.");
-      return;
-    }
-    setSubmitting(true);
-    const ok =
-      email.trim().toLowerCase() === AUTH_EMAIL && password === AUTH_PASSWORD;
-    if (!ok) {
-      setError("Invalid email or password");
-      setSubmitting(false);
-      return;
-    }
+  const google = async () => {
     setError(null);
-    onSuccess();
+    setSubmitting(true);
+    const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/` },
+    });
+    if (oauthErr) {
+      setError(oauthErr.message);
+      setSubmitting(false);
+    }
   };
+
+  const combined = gateError ?? error;
 
   return (
     <main className="auth-screen">
-      <form className="auth-card" onSubmit={handleSubmit}>
+      <div className="auth-card">
         <img src="/fv-logo.png" alt="FieldVision" className="auth-logo" />
         <h1 className="auth-title">FieldVision Cold Email CRM</h1>
-        <p className="auth-sub">Sign in to continue</p>
+        <p className="auth-sub">Sign in with your Google account</p>
 
-        <label className="field">
-          <span>Email</span>
-          <input
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
+        {combined ? <p className="form-error">{combined}</p> : null}
 
-        <label className="field">
-          <span>Password</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-
-        {error ? <p className="form-error">{error}</p> : null}
-
-        <button className="primary-btn full" type="submit" disabled={submitting}>
-          {submitting ? "Signing in" : "Sign in"}
+        <button type="button" className="primary-btn full" onClick={google} disabled={submitting}>
+          {submitting ? "Redirecting" : "Continue with Google"}
         </button>
-      </form>
+      </div>
     </main>
   );
 }

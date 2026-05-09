@@ -13,7 +13,11 @@ function buildClient(): SupabaseClient {
   }
 
   return createClient(url, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
   });
 }
 
