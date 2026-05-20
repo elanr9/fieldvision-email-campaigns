@@ -128,15 +128,17 @@ export function defaultBodyTemplate(): string {
 
 export const GRAD_YEAR_TEMPLATES: Record<number, { subject: string; body: string }> = {
   2026: {
-    subject: "{{first_name}}, it's not too late for College Soccer",
+    subject: "{{first_name}}, it's not too late for a College Soccer Scholarship!",
     body: [
       "Hi {{first_name}},",
       "",
-      "I saw you play for {{club}} and since you're graduating soon I wanted to ask — are you still looking to play college soccer? I'm Elan, the CEO of FieldVision AI.",
+      "I'm Elan, the CEO of FieldVision AI — the first-ever AI College Recruitment Platform. I saw you play for {{club}} and since you're graduating soon, I wanted to reach out and see what your plans are for college and whether you're still looking to play soccer at the next level.",
       "",
-      "I built FieldVision after going through recruiting myself. My parents couldn't pay the $5,000+ that NCSA and others charge, so I did everything alone. FieldVision emails 50 coaches a day on your behalf, builds your highlight video with AI, and alerts you the moment a coach opens your profile. Our first athlete just committed to Harvard.",
+      "D1-D3 programs are still finalizing their rosters for next fall and we think you have a real shot at a scholarship before it all closes. We launched 1 month ago and our first athlete just committed to Harvard!",
       "",
-      "The window for the Class of 2026 is closing fast. Takes 2 minutes to get started.",
+      "A bit about myself: I grew up playing for Weston FC and Dallas Texans, got 4 D1 offers including Michigan State, and went D3 at Brandeis in Boston. My parents couldn't afford NCSA or the other recruiting services that charge $5k+ so I did everything myself — 10+ hrs/wk of emailing and making highlight videos.",
+      "",
+      "FieldVision cuts recruiting from 10 hours/week to 20 minutes:\n- AI-made highlight videos — just upload your clips\n- AI emails 50 coaches per day on your behalf\n- Automatic follow-ups with coaches who don't respond\n- Notifications when coaches open emails or watch your videos\n- Guidance from D1 athletes at Harvard, Michigan, UCF, and more",
     ].join("\n"),
   },
   2027: {
