@@ -173,9 +173,15 @@ export default function App() {
     try {
       const result = await sendDueNow();
       if (result.locked) {
-        showToast(result.message ?? "Rate limit. Try again later");
+        showToast("Rate limit: already sent 50 in the last hour");
+      } else if (result.processed === 0) {
+        showToast("No emails due right now");
+      } else if (result.failed > 0 && result.sent === 0) {
+        showToast(`All ${result.failed} failed to send`);
+      } else if (result.failed > 0) {
+        showToast(`${result.sent} sent, ${result.failed} failed`);
       } else {
-        showToast(`${result.sent} sent. ${result.failed} failed`);
+        showToast(`${result.sent} emails sent`);
       }
       refreshDashboard();
       if (selectedId) refreshDetail(selectedId);
@@ -197,11 +203,6 @@ export default function App() {
           </div>
         </div>
         <div className="stats-launch">
-          {dashboardBusy ? (
-            <div className="stats-loading-overlay" role="status" aria-live="polite">
-              <span className="spinner" aria-hidden />
-            </div>
-          ) : null}
           <div className={`stats-grid${dashboardBusy ? " stats-grid-pending" : ""}`}>
             <StatCard label="In Queue" value={stats.queued} />
             <StatCard label="Sent" value={stats.sent} />
