@@ -71,16 +71,51 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
+function bodyToParagraphs(body: string): string {
+  return body
+    .split(/\n\n+/)
+    .map((para) => {
+      const escaped = escapeHtml(para.trim()).replace(/\n/g, "<br>");
+      if (!escaped) return "";
+      return `<p style="margin:0 0 16px">${escaped}</p>`;
+    })
+    .filter(Boolean)
+    .join("");
+}
+
 function buildHtml(body: string, pixelUrl: string, clickUrl: string): string {
-  const escaped = escapeHtml(body)
-    .replace(
-      /https:\/\/fieldvisionai\.com/g,
-      `<a href="${clickUrl}" style="color:#2563eb;text-decoration:underline">${TRACKED_DOMAIN}</a>`,
-    )
-    .replace(/\n/g, "<br/>");
-  const logoTop = `<div style="margin-bottom:16px"><img src="${LOGO_URL}" width="80" height="80" alt="FieldVision" style="display:block;border:0;outline:none" /></div>`;
-  const logoSig = `<div style="margin-top:16px"><img src="${LOGO_URL}" width="56" height="56" alt="FieldVision" style="display:block;border:0;outline:none" /></div>`;
-  return `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.5">${logoTop}${escaped}${logoSig}<img src="${pixelUrl}" width="1" height="1" alt="" style="display:none" /></body></html>`;
+  const paragraphs = bodyToParagraphs(body);
+
+  const button = `
+<div style="margin:28px 0">
+  <a href="${clickUrl}"
+     style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block;line-height:1">
+    Get Started Now &rarr;
+  </a>
+</div>`;
+
+  const signature = `
+<div style="margin-top:32px;font-size:14px;color:#334155;line-height:1.7">
+  Best,<br>
+  <strong>Elan Romo</strong><br>
+  CEO &amp; Co-founder, FieldVision AI
+</div>
+<div style="margin-top:14px">
+  <img src="${LOGO_URL}" width="36" height="36" alt="FieldVision AI" style="display:block;opacity:0.8;border:0">
+</div>`;
+
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;-webkit-font-smoothing:antialiased">
+  <div style="max-width:560px;margin:0 auto;padding:40px 24px;font-size:15px">
+    ${paragraphs}
+    ${button}
+    ${signature}
+    <img src="${pixelUrl}" width="1" height="1" alt="" style="display:none">
+  </div>
+</body>
+</html>`;
 }
 
 function buildRawEmail(

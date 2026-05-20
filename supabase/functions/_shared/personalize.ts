@@ -107,19 +107,15 @@ export function defaultBodyTemplate(): string {
   return [
     "Hi {{first_name}},",
     "",
-    "I saw you play with {{club}} and wanted to reach out because your profile stood out.",
+    "I personally came across your profile playing for {{club}} and wanted to reach out.",
     "",
     "{{grad_year_angle}}",
     "",
     "{{gpa_line}}",
     "",
-    "I put together a short list of ten schools that could be worth looking at:",
-    "{{schools_list}}",
+    "FieldVision is the recruiting platform I built to help players like you get in front of college coaches fast. We email 50 coaches a day on your behalf, build your highlight video in minutes, and alert you when coaches open your profile.",
     "",
-    "If you want I can send over a simple plan for how I would start outreach for a {{positions}} player in the {{grad_year}} class.",
-    "",
-    "Best,",
-    "FieldVision",
+    "Most players we work with get their first coach response within 2 weeks.",
   ].join("\n");
 }
 
