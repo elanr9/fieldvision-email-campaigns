@@ -467,6 +467,25 @@
   font-size: 11px;
 }
 
+.campaign-status-badge {
+  background: #fbbf24;
+  border-radius: 4px;
+  color: #000;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+}
+
+.detail-action-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .detail-actions {
   align-items: flex-end;
   display: flex;
@@ -840,6 +859,16 @@
   color: #991b1b;
   font-size: 13px;
   padding: 8px 12px;
+}
+
+.modal-loading {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 14px;
+  gap: 12px;
+  justify-content: center;
+  padding: 60px 24px;
 }
 
 .modal-actions {

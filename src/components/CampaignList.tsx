@@ -37,7 +37,12 @@ export default function CampaignList({ campaigns, selectedId, onSelect, onNew }:
               >
                 <span className="campaign-number">#{c.number}</span>
                 <span className="campaign-info">
-                  <strong>{c.name}</strong>
+                  <strong>
+                    {c.name}
+                    {c.status === "paused" ? (
+                      <span className="campaign-status-badge">Paused</span>
+                    ) : null}
+                  </strong>
                   <small>
                     {c.sent_count} sent | {c.opened_count} opened | {c.clicked_count} clicked
                   </small>

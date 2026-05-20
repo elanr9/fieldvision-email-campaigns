@@ -8,6 +8,7 @@ import {
   getCampaignDetail,
   getDashboard,
   sendDueNow,
+  setCampaignStatus,
   type CampaignSendRow,
   type CampaignSummary,
 } from "./lib/api";
@@ -38,6 +39,7 @@ export default function App() {
   const [showNew, setShowNew] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [togglingPause, setTogglingPause] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const toastTimer = useRef<number | null>(null);
@@ -124,6 +126,21 @@ export default function App() {
     };
   }, [campaigns]);
 
+  const handleTogglePause = async () => {
+    if (!selectedCampaign) return;
+    setTogglingPause(true);
+    try {
+      const next = selectedCampaign.status === "paused" ? "active" : "paused";
+      await setCampaignStatus(selectedCampaign.id, next);
+      showToast(`Campaign ${next === "paused" ? "paused" : "resumed"}`);
+      refreshDashboard();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setTogglingPause(false);
+    }
+  };
+
   const handleCreated = (id: string) => {
     setShowNew(false);
     setSelectedId(id);
@@ -203,6 +220,10 @@ export default function App() {
             lastRefreshedAt={lastDetailRefresh}
             onSendBatch={handleSendDue}
             sending={sending}
+            onTogglePause={handleTogglePause}
+            togglingPause={togglingPause}
+            onRefresh={() => { refreshDashboard(); if (selectedId) refreshDetail(selectedId); }}
+            onToast={showToast}
           />
         </section>
       </section>

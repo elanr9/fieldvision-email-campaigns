@@ -116,3 +116,46 @@ export async function getCampaignDetail(campaignId: string): Promise<CampaignSen
   if (error) throw error;
   return (data ?? []) as CampaignSendRow[];
 }
+
+export type CampaignTemplate = {
+  id: string;
+  name: string;
+  subject_template: string;
+  body_template: string;
+  status: CampaignStatus;
+};
+
+export async function getCampaignTemplate(campaignId: string): Promise<CampaignTemplate> {
+  const { data, error } = await supabase.rpc("get_campaign_template", {
+    campaign_uuid: campaignId,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as CampaignTemplate[];
+  if (!rows[0]) throw new Error("Campaign not found");
+  return rows[0];
+}
+
+export async function updateCampaign(
+  campaignId: string,
+  subjectTemplate: string,
+  bodyTemplate: string,
+): Promise<{ updated: number }> {
+  const { data, error } = await supabase.functions.invoke<{ updated: number }>(
+    "update-campaign",
+    { body: { campaign_id: campaignId, subject_template: subjectTemplate, body_template: bodyTemplate } },
+  );
+  if (error) throw error;
+  if (!data) throw new Error("update-campaign returned no data");
+  return data;
+}
+
+export async function setCampaignStatus(
+  campaignId: string,
+  status: CampaignStatus,
+): Promise<void> {
+  const { error } = await supabase.rpc("set_campaign_status", {
+    campaign_uuid: campaignId,
+    new_status: status,
+  });
+  if (error) throw error;
+}

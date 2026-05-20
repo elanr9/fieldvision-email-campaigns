@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import type { CampaignSummary, CampaignSendRow } from "../lib/api";
 import { FV_LOGO_URL } from "../lib/personalize";
+import EditCampaign from "./EditCampaign";
 
 type Props = {
   campaign: CampaignSummary | null;
@@ -9,6 +10,10 @@ type Props = {
   lastRefreshedAt: Date | null;
   onSendBatch?: () => void;
   sending?: boolean;
+  onTogglePause?: () => void;
+  togglingPause?: boolean;
+  onRefresh?: () => void;
+  onToast?: (msg: string) => void;
 };
 
 const dateFmt = new Intl.DateTimeFormat(undefined, {
@@ -35,8 +40,14 @@ function fmtPercent(rate: number): string {
   return `${Math.round(rate * 100)}%`;
 }
 
-export default function CampaignDetail({ campaign, rows, loading, lastRefreshedAt, onSendBatch, sending }: Props) {
+export default function CampaignDetail({
+  campaign, rows, loading, lastRefreshedAt,
+  onSendBatch, sending,
+  onTogglePause, togglingPause,
+  onRefresh, onToast,
+}: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
 
   if (!campaign) {
     return (
@@ -70,16 +81,42 @@ export default function CampaignDetail({ campaign, rows, loading, lastRefreshedA
           </div>
         </div>
         <div className="detail-actions">
-          {onSendBatch ? (
+          <div className="detail-action-row">
+            {onSendBatch && campaign.status === "active" ? (
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={onSendBatch}
+                disabled={sending}
+              >
+                {sending ? (
+                  <>
+                    <span className="spinner spinner-inline" aria-hidden />
+                    Sending
+                  </>
+                ) : (
+                  "Send next 50"
+                )}
+              </button>
+            ) : null}
             <button
               type="button"
-              className="primary-btn"
-              onClick={onSendBatch}
-              disabled={sending}
+              className="ghost-btn"
+              onClick={() => setShowEdit(true)}
             >
-              {sending ? "Sending" : "Send next 50"}
+              Edit template
             </button>
-          ) : null}
+            {onTogglePause ? (
+              <button
+                type="button"
+                className="ghost-btn"
+                onClick={onTogglePause}
+                disabled={togglingPause}
+              >
+                {togglingPause ? "Updating" : campaign.status === "paused" ? "Resume campaign" : "Pause campaign"}
+              </button>
+            ) : null}
+          </div>
           <div className="detail-refresh">
             {loading ? (
               <>
@@ -222,6 +259,15 @@ export default function CampaignDetail({ campaign, rows, loading, lastRefreshedA
           </tbody>
         </table>
       </div>
+
+      {showEdit ? (
+        <EditCampaign
+          campaignId={campaign.id}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => { onRefresh?.(); }}
+          onToast={(msg) => { onToast?.(msg); }}
+        />
+      ) : null}
     </section>
   );
 }

@@ -15,9 +15,54 @@ type Claimed = {
 };
 
 const BATCH_LIMIT = 50;
-const LOCKOUT_MINUTES = 30;
-const LOGO_URL = "https://cjutymkbpcwnxbepnnty.supabase.co/storage/v1/object/public/assets/fv-logo.png";
-const TRACKED_URL = "https://fieldvisionai.com";
+const LOCKOUT_MINUTES = 60;
+const LOGO_URL =
+  "https://cjutymkbpcwnxbepnnty.supabase.co/storage/v1/object/public/assets/fv-logo.png";
+const TRACKED_DOMAIN = "https://fieldvisionai.com";
+
+async function getAccessToken(
+  clientId: string,
+  clientSecret: string,
+  refreshToken: string,
+): Promise<string> {
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const json = (await res.json()) as {
+    access_token?: string;
+    error_description?: string;
+    error?: string;
+  };
+  if (!res.ok) {
+    throw new Error(
+      `Gmail token refresh failed: ${json.error_description ?? json.error ?? res.status}`,
+    );
+  }
+  return json.access_token!;
+}
+
+function encodeBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function encodeBase64Url(text: string): string {
+  return encodeBase64(text)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 
 function escapeHtml(text: string): string {
   return text
@@ -28,11 +73,51 @@ function escapeHtml(text: string): string {
 
 function buildHtml(body: string, pixelUrl: string, clickUrl: string): string {
   const escaped = escapeHtml(body)
-    .replace(/https:\/\/fieldvisionai\.com/g, `<a href="${clickUrl}" style="color:#2563eb;text-decoration:underline">${TRACKED_URL}</a>`)
+    .replace(
+      /https:\/\/fieldvisionai\.com/g,
+      `<a href="${clickUrl}" style="color:#2563eb;text-decoration:underline">${TRACKED_DOMAIN}</a>`,
+    )
     .replace(/\n/g, "<br/>");
   const logoTop = `<div style="margin-bottom:16px"><img src="${LOGO_URL}" width="80" height="80" alt="FieldVision" style="display:block;border:0;outline:none" /></div>`;
   const logoSig = `<div style="margin-top:16px"><img src="${LOGO_URL}" width="56" height="56" alt="FieldVision" style="display:block;border:0;outline:none" /></div>`;
   return `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.5">${logoTop}${escaped}${logoSig}<img src="${pixelUrl}" width="1" height="1" alt="" style="display:none" /></body></html>`;
+}
+
+function buildRawEmail(
+  from: string,
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+): string {
+  const encSubject = /^[\x00-\x7F]*$/.test(subject)
+    ? subject
+    : `=?UTF-8?B?${encodeBase64(subject)}?=`;
+
+  const boundary = `fv_${Date.now()}`;
+  const message = [
+    `MIME-Version: 1.0`,
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${encSubject}`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/plain; charset=utf-8`,
+    `Content-Transfer-Encoding: base64`,
+    ``,
+    encodeBase64(text),
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/html; charset=utf-8`,
+    `Content-Transfer-Encoding: base64`,
+    ``,
+    encodeBase64(html),
+    ``,
+    `--${boundary}--`,
+  ].join("\r\n");
+
+  return encodeBase64Url(message);
 }
 
 serve(async (req: Request) => {
@@ -46,15 +131,31 @@ serve(async (req: Request) => {
   );
 
   const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/+$/, "");
-  const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
-  const resendFrom = Deno.env.get("RESEND_FROM") ?? "";
+  const gmailClientId = Deno.env.get("GMAIL_CLIENT_ID") ?? "";
+  const gmailClientSecret = Deno.env.get("GMAIL_CLIENT_SECRET") ?? "";
+  const gmailRefreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN") ?? "";
+  const gmailFrom = Deno.env.get("GMAIL_FROM") ?? "Elan | FieldVision <founders@fieldvisionai.com>";
 
+  if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken) {
+    return new Response(
+      JSON.stringify({
+        error: "Gmail credentials not set. Run scripts/get-gmail-token.mjs first.",
+        processed: 0,
+        sent: 0,
+        failed: 0,
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  // 60-minute rate limit
   const cutoff = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000).toISOString();
   const { count: recentCount, error: lockErr } = await supabase
     .from("email_sends")
     .select("id", { head: true, count: "exact" })
     .eq("status", "sent")
     .gte("sent_at", cutoff);
+
   if (lockErr) {
     return new Response(
       JSON.stringify({ error: lockErr.message, processed: 0, sent: 0, failed: 0 }),
@@ -68,14 +169,26 @@ serve(async (req: Request) => {
         sent: 0,
         failed: 0,
         locked: true,
-        lockout_minutes: LOCKOUT_MINUTES,
-        message: `Rate limit. Try again in up to ${LOCKOUT_MINUTES} min`,
+        message: `Rate limit: 50 emails already sent in the last ${LOCKOUT_MINUTES} min`,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
-  const { data, error } = await supabase.rpc("claim_due_sends", { limit_count: BATCH_LIMIT });
+  // Refresh Gmail access token
+  let accessToken: string;
+  try {
+    accessToken = await getAccessToken(gmailClientId, gmailClientSecret, gmailRefreshToken);
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ error: (err as Error).message, processed: 0, sent: 0, failed: 0 }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const { data, error } = await supabase.rpc("claim_due_sends", {
+    limit_count: BATCH_LIMIT,
+  });
   if (error) {
     return new Response(
       JSON.stringify({ error: error.message, processed: 0, sent: 0, failed: 0 }),
@@ -92,26 +205,27 @@ serve(async (req: Request) => {
       const pixelUrl = `${supabaseUrl}/functions/v1/track-open/p/${row.id}.gif`;
       const clickUrl = `${supabaseUrl}/functions/v1/track-click/c/${row.id}`;
       const html = buildHtml(row.body, pixelUrl, clickUrl);
+      const raw = buildRawEmail(gmailFrom, row.email, row.subject, html, row.body);
 
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ raw }),
         },
-        body: JSON.stringify({
-          from: resendFrom,
-          to: [row.email],
-          subject: row.subject,
-          html,
-          text: row.body,
-        }),
-      });
+      );
 
-      const json = (await res.json().catch(() => ({}))) as { id?: string; message?: string };
+      const json = (await res.json().catch(() => ({}))) as {
+        id?: string;
+        error?: { message?: string };
+      };
 
       if (!res.ok) {
-        const message = json.message || `Resend error ${res.status}`;
+        const message = json.error?.message ?? `Gmail API error ${res.status}`;
         await supabase
           .from("email_sends")
           .update({ status: "failed", error: message })
@@ -129,7 +243,7 @@ serve(async (req: Request) => {
         })
         .eq("id", row.id);
       sent++;
-      await new Promise((r) => setTimeout(r, 250));
+      await new Promise((r) => setTimeout(r, 200));
     } catch (err) {
       await supabase
         .from("email_sends")
