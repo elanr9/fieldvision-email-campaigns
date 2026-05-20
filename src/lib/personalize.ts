@@ -132,7 +132,7 @@ export const GRAD_YEAR_TEMPLATES: Record<number, { subject: string; body: string
     body: [
       "Hi {{first_name}},",
       "",
-      "I saw you play for {{club}} and since you're graduating soon I wanted to ask — are you still looking to play college soccer?",
+      "I saw you play for {{club}} and since you're graduating soon I wanted to ask — are you still looking to play college soccer? I'm Elan, the CEO of FieldVision AI.",
       "",
       "I built FieldVision after going through recruiting myself. My parents couldn't pay the $5,000+ that NCSA and others charge, so I did everything alone. FieldVision emails 50 coaches a day on your behalf, builds your highlight video with AI, and alerts you the moment a coach opens your profile. Our first athlete just committed to Harvard.",
       "",
