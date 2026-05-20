@@ -762,7 +762,7 @@
 }
 
 .toast {
-  background: var(--text-h);
+  background: #1e293b;
   border-radius: 999px;
   color: #fff;
   font-size: 13px;
