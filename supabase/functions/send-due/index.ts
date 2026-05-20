@@ -131,15 +131,15 @@ serve(async (req: Request) => {
   );
 
   const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/+$/, "");
-  const gmailClientId = Deno.env.get("GMAIL_CLIENT_ID") ?? "";
-  const gmailClientSecret = Deno.env.get("GMAIL_CLIENT_SECRET") ?? "";
-  const gmailRefreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN") ?? "";
+  const gmailClientId = Deno.env.get("GOOGLE_CLIENT_ID") ?? "";
+  const gmailClientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET") ?? "";
+  const gmailRefreshToken = Deno.env.get("FOUNDERS_GMAIL_REFRESH_TOKEN") ?? "";
   const gmailFrom = Deno.env.get("GMAIL_FROM") ?? "Elan | FieldVision <founders@fieldvisionai.com>";
 
   if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken) {
     return new Response(
       JSON.stringify({
-        error: "Gmail credentials not set. Run scripts/get-gmail-token.mjs first.",
+        error: "Gmail credentials not set (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / FOUNDERS_GMAIL_REFRESH_TOKEN).",
         processed: 0,
         sent: 0,
         failed: 0,
