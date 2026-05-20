@@ -1,0 +1,3 @@
+update campaigns
+set body_template = E'Hi {{first_name}},\n\nI saw you play for {{club}} and since you''re graduating soon I wanted to ask — are you still looking to play college soccer?\n\nI built FieldVision after going through recruiting myself. My parents couldn''t pay the $5,000+ that NCSA and others charge, so I did everything alone. FieldVision emails 50 coaches a day on your behalf, builds your highlight video with AI, and alerts you the moment a coach opens your profile. Our first athlete just committed to Harvard.\n\nThe window for the Class of 2026 is closing fast. Takes 2 minutes to get started.'
+where number = 1;

@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import type { CampaignSummary, CampaignSendRow } from "../lib/api";
+import { sendTestEmail } from "../lib/api";
 import { FV_LOGO_URL } from "../lib/personalize";
 import EditCampaign from "./EditCampaign";
 
@@ -48,6 +49,20 @@ export default function CampaignDetail({
 }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const handleSendTest = async () => {
+    if (!campaign) return;
+    setSendingTest(true);
+    try {
+      await sendTestEmail(campaign.id, "elanromo90@gmail.com");
+      onToast?.("Test email sent to elanromo90@gmail.com");
+    } catch (err) {
+      onToast?.((err as Error).message);
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   if (!campaign) {
     return (
@@ -105,6 +120,14 @@ export default function CampaignDetail({
               onClick={() => setShowEdit(true)}
             >
               Edit template
+            </button>
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={handleSendTest}
+              disabled={sendingTest}
+            >
+              {sendingTest ? "Sending test" : "Send test email"}
             </button>
             {onTogglePause ? (
               <button

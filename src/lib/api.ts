@@ -149,6 +149,15 @@ export async function updateCampaign(
   return data;
 }
 
+export async function sendTestEmail(campaignId: string, toEmail: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke<{ ok: boolean; error?: string }>(
+    "send-test",
+    { body: { campaign_id: campaignId, to_email: toEmail } },
+  );
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+}
+
 export async function setCampaignStatus(
   campaignId: string,
   status: CampaignStatus,

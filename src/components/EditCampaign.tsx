@@ -126,23 +126,14 @@ export default function EditCampaign({ campaignId, onClose, onSaved, onToast }: 
               <p className="preview-label">Preview for Alex Rivera</p>
               <div className="preview-card">
                 <p className="preview-subject">{preview.subject}</p>
-                <div className="email-preview">
-                  <img
-                    src={FV_LOGO_URL}
-                    width="80"
-                    height="80"
-                    alt="FieldVision"
-                    className="email-logo"
-                  />
-                  <pre className="preview-body">{preview.body}</pre>
-                  <img
-                    src={FV_LOGO_URL}
-                    width="56"
-                    height="56"
-                    alt="FieldVision"
-                    className="email-logo email-logo-sig"
-                  />
+                <pre className="preview-body">{preview.body}</pre>
+                <div className="preview-cta">Get Started Now →</div>
+                <div className="preview-sig">
+                  Best,<br />
+                  <strong>Elan Romo</strong><br />
+                  CEO &amp; Co-founder, FieldVision AI
                 </div>
+                <img src={FV_LOGO_URL} width="32" height="32" alt="FieldVision" className="email-logo-sig" />
               </div>
             </div>
           </div>
