@@ -3,7 +3,8 @@ import "./App.css";
 import CampaignList from "./components/CampaignList";
 import CampaignDetail from "./components/CampaignDetail";
 import NewCampaign from "./components/NewCampaign";
-import ImportPanel from "./components/ImportPanel";
+import { importCsv } from "./lib/api";
+import { parseCsv } from "./lib/csv";
 import {
   getCampaignDetail,
   getDashboard,
@@ -41,6 +42,8 @@ export default function App() {
   const [sending, setSending] = useState(false);
   const [togglingPause, setTogglingPause] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const importRef = useRef<HTMLInputElement | null>(null);
 
   const toastTimer = useRef<number | null>(null);
 
@@ -141,6 +144,24 @@ export default function App() {
     }
   };
 
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return;
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      if (!rows.length) { showToast("No valid rows in CSV"); return; }
+      const result = await importCsv(rows);
+      showToast(`Imported ${result.imported} of ${result.total}. ${result.skipped} skipped`);
+      void refreshDashboard();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImporting(false);
+      if (importRef.current) importRef.current.value = "";
+    }
+  };
+
   const handleCreated = (id: string) => {
     setShowNew(false);
     setSelectedId(id);
@@ -168,35 +189,31 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <section className="hero">
-        <div className="hero-text">
-          <div className="hero-top">
+      <header className="hero">
+        <div className="hero-top">
+          <div className="hero-text">
             <p className="eyebrow">FieldVision</p>
-            <button type="button" className="ghost-btn" onClick={() => void supabase.auth.signOut()}>
-              Sign out
-            </button>
+            <h1>Outreach CRM</h1>
           </div>
-          <h1>FieldVision Outreach CRM</h1>
-          <p className="hero-copy">
-            Import your outreach list, queue personalized campaigns, and track open rates as emails go out.
-          </p>
         </div>
         <div className="stats-launch">
           {dashboardBusy ? (
             <div className="stats-loading-overlay" role="status" aria-live="polite">
               <span className="spinner" aria-hidden />
-              <span>Loading metrics</span>
             </div>
           ) : null}
           <div className={`stats-grid${dashboardBusy ? " stats-grid-pending" : ""}`}>
-            <StatCard label="Leads in queue" value={stats.queued} />
+            <StatCard label="In Queue" value={stats.queued} />
             <StatCard label="Sent" value={stats.sent} />
             <StatCard label="Opened" value={`${stats.opened} (${formatPercent(stats.openRate)})`} />
-            <StatCard label="Clicked website" value={`${stats.clicked} (${formatPercent(stats.clickRate)})`} />
+            <StatCard label="Clicked" value={`${stats.clicked} (${formatPercent(stats.clickRate)})`} />
             <StatCard label="Failed" value={stats.failed} />
           </div>
         </div>
-      </section>
+        <button type="button" className="ghost-btn" onClick={() => void supabase.auth.signOut()}>
+          Sign out
+        </button>
+      </header>
 
       {toast ? <div className="toast">{toast}</div> : null}
       {error ? <div className="banner-error">{error}</div> : null}
@@ -208,8 +225,16 @@ export default function App() {
             selectedId={selectedId}
             onSelect={setSelectedId}
             onNew={() => setShowNew(true)}
+            onImport={() => importRef.current?.click()}
+            importing={importing}
           />
-          <ImportPanel onImported={refreshDashboard} onToast={showToast} />
+          <input
+            ref={importRef}
+            type="file"
+            accept=".csv,text/csv"
+            style={{ display: "none" }}
+            onChange={(e) => void handleImportFile(e.target.files?.[0] ?? null)}
+          />
         </aside>
 
         <section className="main-col">

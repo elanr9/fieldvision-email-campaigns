@@ -140,79 +140,79 @@
 }
 
 .hero {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  box-shadow: var(--shadow);
-  display: grid;
-  grid-template-columns: 1fr 520px;
-  gap: 24px;
   align-items: center;
-  padding: 28px;
-  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 0 0 18px;
 }
 
 .hero-top {
   align-items: center;
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 16px;
 }
 
 .hero-text .eyebrow {
   color: var(--accent);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
 }
 
 .hero-text h1 {
-  font-size: clamp(28px, 4vw, 44px);
-  letter-spacing: -0.03em;
-  line-height: 1.05;
   color: var(--text-h);
-  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 2px 0 0;
 }
 
 .hero-copy {
-  max-width: 640px;
-  color: var(--muted);
-  margin: 0;
+  display: none;
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  display: flex;
+  gap: 6px;
 }
 
 .stat-card {
   background: var(--soft);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 12px;
+  min-width: 90px;
+  padding: 10px 14px;
 }
 
 .stat-card p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 600;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .stat-card strong {
   color: var(--text-h);
-  font-size: 24px;
   display: block;
-  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
 }
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 20px;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
 }
 
 .left-rail {
@@ -263,27 +263,30 @@
 }
 
 .primary-btn:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: var(--accent-hover);
 }
 
 .primary-btn:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .ghost-btn {
   background: var(--soft);
   border: 1px solid var(--border);
-  color: var(--text-h);
+  color: var(--text);
+  font-size: 14px;
 }
 
 .ghost-btn:hover:not(:disabled) {
-  background: #e6ecf3;
+  background: var(--card-raised);
+  border-color: #2d3a52;
+  color: var(--text-h);
 }
 
 .ghost-btn:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .full {
@@ -297,69 +300,79 @@
 }
 
 .campaign-list-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
+  display: flex;
   gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
 .campaign-list-header h2 {
-  font-size: 18px;
-  margin: 0;
   color: var(--text-h);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .campaign-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 60vh;
+  gap: 6px;
+  max-height: 62vh;
   overflow-y: auto;
 }
 
 .campaign-row {
   align-items: center;
-  background: var(--input);
+  background: var(--soft);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
+  color: var(--text-h);
   cursor: pointer;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  padding: 12px;
-  text-align: left;
   font: inherit;
-  color: var(--text-h);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  gap: 10px;
+  grid-template-columns: auto 1fr;
+  padding: 10px 12px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .campaign-row:hover {
-  background: #f8fafc;
+  background: var(--card-raised);
+  border-color: #2d3a52;
 }
 
 .campaign-row.active {
+  background: color-mix(in srgb, var(--accent) 10%, var(--soft));
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-  background: #f5f8ff;
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .campaign-number {
-  font-size: 22px;
-  font-weight: 700;
   color: var(--accent);
-  min-width: 42px;
+  font-size: 18px;
+  font-weight: 800;
+  min-width: 36px;
 }
 
 .campaign-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
+}
+
+.campaign-name-row {
+  align-items: center;
+  display: flex;
+  gap: 6px;
 }
 
 .campaign-info strong {
   color: var(--text-h);
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -367,7 +380,54 @@
 
 .campaign-info small {
   color: var(--muted);
+  font-size: 11px;
+}
+
+.campaign-progress-bar {
+  background: var(--border);
+  border-radius: 4px;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.campaign-progress-sent {
+  background: var(--accent);
+  border-radius: 4px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transition: width 0.4s ease;
+}
+
+.campaign-progress-open {
+  background: #22c55e;
+  border-radius: 4px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transition: width 0.4s ease;
+}
+
+.import-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
   font-size: 12px;
+  margin-top: 4px;
+  padding: 6px 2px;
+  text-align: left;
+  transition: color 0.15s;
+}
+
+.import-link:hover:not(:disabled) {
+  color: var(--text-h);
 }
 
 .import-card,
@@ -559,11 +619,11 @@
 }
 
 .detail-table tbody tr.row:hover {
-  background: #f8fafc;
+  background: var(--soft);
 }
 
 .detail-table tbody tr.row.expanded {
-  background: #f5f8ff;
+  background: color-mix(in srgb, var(--accent) 6%, var(--card));
 }
 
 .cell-name {
@@ -584,7 +644,7 @@
 }
 
 .expand-row td {
-  background: #fafbff;
+  background: var(--soft);
   padding: 16px 18px;
 }
 
@@ -922,10 +982,10 @@
 
 @media (max-width: 1100px) {
   .hero {
-    grid-template-columns: 1fr;
+    flex-wrap: wrap;
   }
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
   }
   .layout-grid {
     grid-template-columns: 1fr;
