@@ -189,7 +189,10 @@ export function renderEmail(
   const lastName = lead.last_name || splitName(lead.full_name || "").lastName || "";
   const rawClub = (lead.club && lead.club.trim()) || "";
   const club = rawClub
-    ? rawClub.replace(/\s+(ECNL|MLS\s*Next|NPL|GA|Boys|Girls|B\d{2}|G\d{2}|U\d{1,2}|\d{4}\/\d{2}|\d{2}\/\d{2}).*$/i, "").trim()
+    ? rawClub
+        .replace(/\s*\(.*\)\s*$/, "")
+        .replace(/\s+(ECNL|MLS\s*Next|NPL|GA|Boys|Girls|B\d{2}|G\d{2}|U\d{1,2}|\d{4}\/\d{2}|\d{2}\/\d{2}).*$/i, "")
+        .trim()
     : "your club";
   const positions = (lead.positions && lead.positions.trim()) || "soccer";
   const gradYearStr = lead.grad_year ? String(lead.grad_year) : "your class";
