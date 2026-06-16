@@ -12,7 +12,7 @@ type Body = {
   name?: string;
   subject_template?: string;
   body_template?: string;
-  lead_filter?: { grad_years?: number[] };
+  lead_filter?: { grad_years?: number[]; exclude_contacted?: boolean };
 };
 
 type LeadRow = Lead & { id: string };
@@ -58,17 +58,14 @@ serve(async (req: Request) => {
       .single();
     if (campaignError) throw campaignError;
 
-    let leadsQuery = supabase
-      .from("leads")
-      .select(
-        "id, full_name, first_name, last_name, email, club, league, grad_year, gpa, positions, age_group",
-      );
-
-    if (body.lead_filter?.grad_years && body.lead_filter.grad_years.length > 0) {
-      leadsQuery = leadsQuery.in("grad_year", body.lead_filter.grad_years);
-    }
-
-    const { data: leads, error: leadsError } = await leadsQuery;
+    const gradYears = body.lead_filter?.grad_years ?? [];
+    const { data: leads, error: leadsError } = await supabase.rpc(
+      "campaign_target_leads",
+      {
+        grad_years: gradYears.length > 0 ? gradYears : null,
+        exclude_contacted: body.lead_filter?.exclude_contacted ?? false,
+      },
+    );
     if (leadsError) throw leadsError;
 
     const now = Date.now();

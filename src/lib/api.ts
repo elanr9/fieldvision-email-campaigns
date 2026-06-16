@@ -47,6 +47,7 @@ export type CampaignSendRow = {
 
 export type LeadFilter = {
   grad_years?: number[];
+  exclude_contacted?: boolean;
 };
 
 export type CreateCampaignPayload = {

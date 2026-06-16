@@ -15,7 +15,7 @@ type Claimed = {
 };
 
 const BATCH_LIMIT = 50;
-const LOCKOUT_MINUTES = 60;
+const LOCKOUT_MINUTES = 30;
 const LOGO_URL =
   "https://cjutymkbpcwnxbepnnty.supabase.co/storage/v1/object/public/assets/fv-logo.png";
 const TRACKED_DOMAIN = "https://fieldvisionai.com";
@@ -90,15 +90,15 @@ function buildHtml(body: string, pixelUrl: string, clickUrl: string): string {
 <div style="margin:28px 0">
   <a href="${clickUrl}"
      style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block;line-height:1">
-    Get Started Now &rarr;
+    See if you're a fit &rarr;
   </a>
 </div>`;
 
   const signature = `
 <div style="margin-top:32px;font-size:14px;color:#334155;line-height:1.7">
   Best,<br>
-  <strong>Elan Romo</strong><br>
-  CEO &amp; Co-founder, FieldVision AI
+  <strong>Sebas</strong><br>
+  Co-Founder, FieldVision AI
 </div>
 <div style="margin-top:14px">
   <img src="${LOGO_URL}" width="36" height="36" alt="FieldVision AI" style="display:block;opacity:0.8;border:0">
@@ -169,7 +169,7 @@ serve(async (req: Request) => {
   const gmailClientId = Deno.env.get("GOOGLE_CLIENT_ID") ?? "";
   const gmailClientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET") ?? "";
   const gmailRefreshToken = Deno.env.get("FOUNDERS_GMAIL_REFRESH_TOKEN") ?? "";
-  const gmailFrom = Deno.env.get("GMAIL_FROM") ?? "Elan | FieldVision <founders@fieldvisionai.com>";
+  const gmailFrom = Deno.env.get("GMAIL_FROM") ?? "Sebas | FieldVision <founders@fieldvisionai.com>";
 
   if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken) {
     return new Response(

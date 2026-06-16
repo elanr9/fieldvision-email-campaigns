@@ -31,6 +31,7 @@ export default function NewCampaign({ onClose, onCreated, onToast }: Props) {
   const [subject, setSubject] = useState(defaultSubjectTemplate());
   const [body, setBody] = useState(defaultBodyTemplate());
   const [gradYears, setGradYears] = useState<number[]>([]);
+  const [excludeContacted, setExcludeContacted] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +66,13 @@ export default function NewCampaign({ onClose, onCreated, onToast }: Props) {
         name: name.trim(),
         subject_template: subject,
         body_template: body,
-        lead_filter: gradYears.length ? { grad_years: gradYears } : undefined,
+        lead_filter:
+          gradYears.length || excludeContacted
+            ? {
+                ...(gradYears.length ? { grad_years: gradYears } : {}),
+                exclude_contacted: excludeContacted,
+              }
+            : undefined,
       });
       onToast(`#${result.number} queued. ${result.queued} emails`);
       onCreated(result.campaign_id);
@@ -132,6 +139,20 @@ export default function NewCampaign({ onClose, onCreated, onToast }: Props) {
               </div>
               <small className="hint">
                 Leave empty to include all leads.
+              </small>
+            </div>
+
+            <div className="field">
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={excludeContacted}
+                  onChange={(e) => setExcludeContacted(e.target.checked)}
+                />
+                <span>Only people we haven't emailed yet</span>
+              </label>
+              <small className="hint">
+                Skips anyone already in a previous campaign.
               </small>
             </div>
 

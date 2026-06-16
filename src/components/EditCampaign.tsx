@@ -127,11 +127,11 @@ export default function EditCampaign({ campaignId, onClose, onSaved, onToast }: 
               <div className="preview-card">
                 <p className="preview-subject">{preview.subject}</p>
                 <pre className="preview-body">{preview.body}</pre>
-                <div className="preview-cta">Get Started Now →</div>
+                <div className="preview-cta">See if you're a fit →</div>
                 <div className="preview-sig">
                   Best,<br />
-                  <strong>Elan Romo</strong><br />
-                  CEO &amp; Co-founder, FieldVision AI
+                  <strong>Sebas</strong><br />
+                  Co-Founder, FieldVision AI
                 </div>
                 <img src={FV_LOGO_URL} width="32" height="32" alt="FieldVision" className="email-logo-sig" />
               </div>
