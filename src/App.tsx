@@ -8,7 +8,6 @@ import { parseCsv } from "./lib/csv";
 import {
   getCampaignDetail,
   getDashboard,
-  sendDueNow,
   setCampaignStatus,
   type CampaignSendRow,
   type CampaignSummary,
@@ -39,7 +38,6 @@ export default function App() {
   const [lastDetailRefresh, setLastDetailRefresh] = useState<Date | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
   const [togglingPause, setTogglingPause] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
@@ -135,7 +133,11 @@ export default function App() {
     try {
       const next = selectedCampaign.status === "paused" ? "active" : "paused";
       await setCampaignStatus(selectedCampaign.id, next);
-      showToast(`Campaign ${next === "paused" ? "paused" : "resumed"}`);
+      showToast(
+        next === "active"
+          ? "Campaign started. 50 emails will go out every hour"
+          : "Campaign paused",
+      );
       refreshDashboard();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed");
@@ -166,31 +168,6 @@ export default function App() {
     setShowNew(false);
     setSelectedId(id);
     refreshDashboard();
-  };
-
-  const handleSendDue = async () => {
-    setSending(true);
-    try {
-      const result = await sendDueNow();
-      if (result.locked) {
-        showToast("Rate limit: already sent 50 in the last hour");
-      } else if (result.processed === 0) {
-        showToast("No emails due right now");
-      } else if (result.failed > 0 && result.sent === 0) {
-        showToast(`All ${result.failed} failed to send`);
-      } else if (result.failed > 0) {
-        showToast(`${result.sent} sent, ${result.failed} failed`);
-      } else {
-        showToast(`${result.sent} emails sent`);
-      }
-      refreshDashboard();
-      if (selectedId) refreshDetail(selectedId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Send failed";
-      showToast(message);
-    } finally {
-      setSending(false);
-    }
   };
 
   return (
@@ -244,8 +221,6 @@ export default function App() {
             rows={detailRows}
             loading={detailLoading}
             lastRefreshedAt={lastDetailRefresh}
-            onSendBatch={handleSendDue}
-            sending={sending}
             onTogglePause={handleTogglePause}
             togglingPause={togglingPause}
             onRefresh={() => { refreshDashboard(); if (selectedId) refreshDetail(selectedId); }}

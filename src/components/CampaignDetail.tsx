@@ -9,8 +9,6 @@ type Props = {
   rows: CampaignSendRow[];
   loading: boolean;
   lastRefreshedAt: Date | null;
-  onSendBatch?: () => void;
-  sending?: boolean;
   onTogglePause?: () => void;
   togglingPause?: boolean;
   onRefresh?: () => void;
@@ -43,7 +41,6 @@ function fmtPercent(rate: number): string {
 
 export default function CampaignDetail({
   campaign, rows, loading, lastRefreshedAt,
-  onSendBatch, sending,
   onTogglePause, togglingPause,
   onRefresh, onToast,
 }: Props) {
@@ -97,20 +94,22 @@ export default function CampaignDetail({
         </div>
         <div className="detail-actions">
           <div className="detail-action-row">
-            {onSendBatch && campaign.status === "active" ? (
+            {onTogglePause ? (
               <button
                 type="button"
                 className="primary-btn"
-                onClick={onSendBatch}
-                disabled={sending}
+                onClick={onTogglePause}
+                disabled={togglingPause}
               >
-                {sending ? (
+                {togglingPause ? (
                   <>
                     <span className="spinner spinner-inline" aria-hidden />
-                    Sending
+                    Updating
                   </>
+                ) : campaign.status === "active" ? (
+                  "Pause campaign"
                 ) : (
-                  "Send next 50"
+                  "Start campaign"
                 )}
               </button>
             ) : null}
@@ -129,16 +128,6 @@ export default function CampaignDetail({
             >
               {sendingTest ? "Sending test" : "Send test email"}
             </button>
-            {onTogglePause ? (
-              <button
-                type="button"
-                className="ghost-btn"
-                onClick={onTogglePause}
-                disabled={togglingPause}
-              >
-                {togglingPause ? "Updating" : campaign.status === "paused" ? "Resume campaign" : "Pause campaign"}
-              </button>
-            ) : null}
           </div>
           <div className="detail-refresh">
             {loading ? (

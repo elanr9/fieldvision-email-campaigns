@@ -15,7 +15,7 @@ type Claimed = {
 };
 
 const BATCH_LIMIT = 50;
-const LOCKOUT_MINUTES = 30;
+const LOCKOUT_MINUTES = 60;
 const LOGO_URL =
   "https://cjutymkbpcwnxbepnnty.supabase.co/storage/v1/object/public/assets/fv-logo.png";
 const TRACKED_DOMAIN = "https://fieldvisionai.com";
