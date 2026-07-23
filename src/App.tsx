@@ -8,6 +8,7 @@ import { parseCsv } from "./lib/csv";
 import {
   getCampaignDetail,
   getDashboard,
+  sendDueNow,
   setCampaignStatus,
   type CampaignSendRow,
   type CampaignSummary,
@@ -133,12 +134,21 @@ export default function App() {
     try {
       const next = selectedCampaign.status === "paused" ? "active" : "paused";
       await setCampaignStatus(selectedCampaign.id, next);
-      showToast(
-        next === "active"
-          ? "Campaign started. 50 emails will go out every hour"
-          : "Campaign paused",
-      );
+      if (next === "active") {
+        showToast("Campaign started, sending first 50 now");
+        const result = await sendDueNow();
+        if (result.locked) {
+          showToast("Campaign started. Next 50 go out at the top of the hour");
+        } else if (result.failed > 0) {
+          showToast(`${result.sent} sent, ${result.failed} failed. 50 more every hour`);
+        } else {
+          showToast(`${result.sent} emails sent. 50 more every hour`);
+        }
+      } else {
+        showToast("Campaign paused");
+      }
       refreshDashboard();
+      if (selectedId) refreshDetail(selectedId);
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed");
     } finally {
