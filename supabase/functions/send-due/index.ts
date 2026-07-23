@@ -15,7 +15,9 @@ type Claimed = {
 };
 
 const BATCH_LIMIT = 50;
-const LOCKOUT_MINUTES = 60;
+// Slightly under 60 so the hourly cron run is not blocked by the previous
+// run's sends, which land a few seconds after the top of the hour.
+const LOCKOUT_MINUTES = 55;
 const LOGO_URL =
   "https://cjutymkbpcwnxbepnnty.supabase.co/storage/v1/object/public/assets/fv-logo.png";
 const TRACKED_DOMAIN = "https://fieldvisionai.com";
