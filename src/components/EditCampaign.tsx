@@ -127,11 +127,14 @@ export default function EditCampaign({ campaignId, onClose, onSaved, onToast }: 
               <div className="preview-card">
                 <p className="preview-subject">{preview.subject}</p>
                 <pre className="preview-body">{preview.body}</pre>
-                <div className="preview-cta">See if you're a fit →</div>
+                <div className="preview-cta">Start free-trial now →</div>
                 <div className="preview-sig">
-                  Best,<br />
-                  <strong>Sebas</strong><br />
-                  Co-Founder, FieldVision AI
+                  Whether you hop on or not, feel free to text/call me anytime about college soccer, my personal number's below.
+                  <br /><br />
+                  Have a great day Alex,<br />
+                  <strong>Elan Romo</strong><br />
+                  Co-founder &amp; CEO, FieldVision AI<br />
+                  954-770-9208
                 </div>
                 <img src={FV_LOGO_URL} width="32" height="32" alt="FieldVision" className="email-logo-sig" />
               </div>

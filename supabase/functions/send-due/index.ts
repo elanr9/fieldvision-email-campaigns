@@ -83,22 +83,27 @@ function bodyToParagraphs(body: string): string {
     .join("");
 }
 
-function buildHtml(body: string, pixelUrl: string, clickUrl: string): string {
+function buildHtml(body: string, pixelUrl: string, clickUrl: string, firstName: string): string {
   const paragraphs = bodyToParagraphs(body);
 
   const button = `
 <div style="margin:28px 0">
   <a href="${clickUrl}"
      style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block;line-height:1">
-    See if you're a fit &rarr;
+    Start free-trial now &rarr;
   </a>
 </div>`;
 
+  const outro = `
+<p style="margin:0 0 16px">Whether you hop on or not, feel free to text/call me anytime about college soccer, my personal number's below.</p>`;
+
+  const greetName = firstName.trim() ? ` ${escapeHtml(firstName.trim())}` : "";
   const signature = `
 <div style="margin-top:32px;font-size:14px;color:#334155;line-height:1.7">
-  Best,<br>
-  <strong>Sebas</strong><br>
-  Co-Founder, FieldVision AI
+  Have a great day${greetName},<br>
+  <strong>Elan Romo</strong><br>
+  Co-founder &amp; CEO, FieldVision AI<br>
+  954-770-9208
 </div>
 <div style="margin-top:14px">
   <img src="${LOGO_URL}" width="36" height="36" alt="FieldVision AI" style="display:block;opacity:0.8;border:0">
@@ -111,6 +116,7 @@ function buildHtml(body: string, pixelUrl: string, clickUrl: string): string {
   <div style="max-width:560px;margin:0 auto;padding:40px 24px;font-size:15px">
     ${paragraphs}
     ${button}
+    ${outro}
     ${signature}
     <img src="${pixelUrl}" width="1" height="1" alt="" style="display:none">
   </div>
@@ -239,7 +245,8 @@ serve(async (req: Request) => {
     try {
       const pixelUrl = `${supabaseUrl}/functions/v1/track-open/p/${row.id}.gif`;
       const clickUrl = `${supabaseUrl}/functions/v1/track-click/c/${row.id}`;
-      const html = buildHtml(row.body, pixelUrl, clickUrl);
+      const firstName = row.first_name?.trim() || (row.full_name ?? "").trim().split(/\s+/)[0] || "";
+      const html = buildHtml(row.body, pixelUrl, clickUrl, firstName);
       const raw = buildRawEmail(gmailFrom, row.email, row.subject, html, row.body);
 
       const res = await fetch(

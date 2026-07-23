@@ -48,11 +48,13 @@ function bodyToParagraphs(body: string): string {
     .join("");
 }
 
-function buildHtml(body: string, ctaUrl: string): string {
+function buildHtml(body: string, ctaUrl: string, firstName: string): string {
   const paragraphs = bodyToParagraphs(body);
-  const button = `<div style="margin:28px 0"><a href="${ctaUrl}" style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block;line-height:1">See if you're a fit &rarr;</a></div>`;
-  const signature = `<div style="margin-top:32px;font-size:14px;color:#334155;line-height:1.7">Best,<br><strong>Sebas</strong><br>Co-Founder, FieldVision AI</div><div style="margin-top:14px"><img src="${LOGO_URL}" width="36" height="36" alt="FieldVision AI" style="display:block;opacity:0.8;border:0"></div>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;-webkit-font-smoothing:antialiased"><div style="max-width:560px;margin:0 auto;padding:40px 24px;font-size:15px">${paragraphs}${button}${signature}</div></body></html>`;
+  const button = `<div style="margin:28px 0"><a href="${ctaUrl}" style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;display:inline-block;line-height:1">Start free-trial now &rarr;</a></div>`;
+  const outro = `<p style="margin:0 0 16px">Whether you hop on or not, feel free to text/call me anytime about college soccer, my personal number's below.</p>`;
+  const greetName = firstName.trim() ? ` ${escapeHtml(firstName.trim())}` : "";
+  const signature = `<div style="margin-top:32px;font-size:14px;color:#334155;line-height:1.7">Have a great day${greetName},<br><strong>Elan Romo</strong><br>Co-founder &amp; CEO, FieldVision AI<br>954-770-9208</div><div style="margin-top:14px"><img src="${LOGO_URL}" width="36" height="36" alt="FieldVision AI" style="display:block;opacity:0.8;border:0"></div>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;-webkit-font-smoothing:antialiased"><div style="max-width:560px;margin:0 auto;padding:40px 24px;font-size:15px">${paragraphs}${button}${outro}${signature}</div></body></html>`;
 }
 
 function buildRaw(from: string, to: string, subject: string, html: string, text: string): string {
@@ -128,7 +130,7 @@ serve(async (req: Request) => {
       sampleLead,
     );
 
-    const html = buildHtml(rendered.body, "https://fieldvisionai.com");
+    const html = buildHtml(rendered.body, "https://fieldvisionai.com", sampleLead.first_name);
     const raw = buildRaw(gmailFrom, to_email, `[TEST] ${rendered.subject}`, html, rendered.body);
 
     const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {

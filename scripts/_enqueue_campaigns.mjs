@@ -11,17 +11,19 @@ const supabase = createClient(URL, KEY, { auth: { persistSession: false } });
 // Template copy: GRAD_YEAR_TEMPLATES from src/lib/personalize.ts (2027 / 2028)
 const TEMPLATES = {
   2027: {
-    subject: "{{first_name}}, the players who commit early start now",
+    subject: "{{first_name}}, it's not too late for college soccer!",
     body: [
-      "Hi {{first_name}},",
+      "Hey {{first_name}},",
       "",
-      "I came across your film from {{club}} and wanted to reach out. As a 2027 grad, you're right at the point where getting on coaches' radars early makes the biggest difference.",
+      "I'm Elan, I saw you play for {{club}} and wanted to reach out about college soccer.",
       "",
-      "Here's what most players don't realize: the recruits who land the best offers usually start the process a full year before their classmates. Coaches build their boards early, and the players already in front of them have the edge.",
+      "Quick background on me: I played at Weston FC MLS Next, had 4 D1 offers, and ended up playing at Brandeis University on a $70k a year scholarship.",
       "",
-      "Quick background on me: I grew up playing for Weston FC and now play D1 at Penn State. Going into my gap year I had zero college interest. By the end I had 10 offers. The only thing that changed was how I got in front of coaches.",
+      "Most of 2027 recruiting is already over, I'm reaching out because I saw you play at a showcase we were at. You can still get recruited but you'd have to start ASAP and do it the right way (took me 10 hrs/week to get all my offers).",
       "",
-      "That's why my team and I built FieldVision AI. It does the entire recruiting grind for you, from highlight videos to coach outreach to follow-ups, in about 20 minutes a week. We offer a free trial so you can see exactly which coaches you could be reaching before committing to anything.",
+      "To tell you a bit more about FieldVision: we cut those 10 hours/week it took us down to just 20 min/week: AI-made highlight videos in 5 mins, all personalized emails, follow ups, guidance, research, for just $20/month. We've helped over 1000 athletes in just 3 months and have seen better results than agencies that charge $5000+, most of our users got their first offer within 2 months and don't even play MLS Next/ECNL.",
+      "",
+      "We have a 1 week free-trial and I attached link below, doesn't hurt at all to try and best case we can get you into college soccer. If you're not interested no worries at all.",
     ].join("\n"),
   },
   2028: {
@@ -41,6 +43,8 @@ const TEMPLATES = {
 };
 
 const CAMPAIGNS = [
+  // 2026 uses its existing campaign template (already sent to 376 leads); do not overwrite copy.
+  { id: "534059e4-bb2f-4a0a-9dd5-d80da008e762", number: 1, gradYear: 2026, useExistingTemplate: true },
   { id: "e7330d56-4962-4451-8df2-116297cd9a58", number: 2, gradYear: 2027 },
   { id: "b23a9c21-c368-4ac0-b839-2ac154e3f403", number: 3, gradYear: 2028 },
 ];
@@ -124,14 +128,25 @@ async function fetchAll(table, columns, applyFilters) {
 }
 
 async function processCampaign(cfg) {
-  const tpl = TEMPLATES[cfg.gradYear];
-
-  // 2. update template copy
-  const { error: upErr } = await supabase
-    .from("campaigns")
-    .update({ subject_template: tpl.subject, body_template: tpl.body })
-    .eq("id", cfg.id);
-  if (upErr) throw new Error(`template update: ${upErr.message}`);
+  let tpl;
+  if (cfg.useExistingTemplate) {
+    // Pull current template from the campaign; do not overwrite copy.
+    const { data, error } = await supabase
+      .from("campaigns")
+      .select("subject_template, body_template")
+      .eq("id", cfg.id)
+      .single();
+    if (error) throw new Error(`template fetch: ${error.message}`);
+    tpl = { subject: data.subject_template, body: data.body_template };
+  } else {
+    tpl = TEMPLATES[cfg.gradYear];
+    // 2. update template copy
+    const { error: upErr } = await supabase
+      .from("campaigns")
+      .update({ subject_template: tpl.subject, body_template: tpl.body })
+      .eq("id", cfg.id);
+    if (upErr) throw new Error(`template update: ${upErr.message}`);
+  }
 
   // leads for this grad year with valid email
   const leads = (await fetchAll(
@@ -201,8 +216,11 @@ async function processCampaign(cfg) {
   };
 }
 
+const onlyYears = process.argv.slice(2).map(Number).filter((n) => !Number.isNaN(n));
+const selected = onlyYears.length ? CAMPAIGNS.filter((c) => onlyYears.includes(c.gradYear)) : CAMPAIGNS;
+
 const results = [];
-for (const cfg of CAMPAIGNS) {
+for (const cfg of selected) {
   results.push(await processCampaign(cfg));
 }
 console.log(JSON.stringify(results, null, 2));
