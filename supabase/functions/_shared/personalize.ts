@@ -13,6 +13,19 @@ export type Lead = {
   age_group?: string | null;
 };
 
+// Club names must never include age group, birth year, gender, or league
+// suffixes (e.g. "Boston Bolts (U18/U19)" -> "Boston Bolts").
+export function cleanClubName(raw: string): string {
+  return raw
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    .replace(
+      /\s+(ECNL|ECRL|ECML|MLS\s*Next|NPL|GA|DPL|Boys|Girls|[BG]\d{2,4}|\d{2}[BG]|U\d{1,2}|(?:19|20)\d{2}(?:\/\d{2,4})?|\d{2}\/\d{2}|\d{2})\b.*$/i,
+      "",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function splitName(fullName: string): { firstName: string; lastName: string } {
   const trimmed = (fullName || "").trim().replace(/\s+/g, " ");
   if (!trimmed) return { firstName: "", lastName: "" };
@@ -130,7 +143,7 @@ export function renderEmail(
     splitName(lead.full_name || "").firstName ||
     "there";
   const lastName = lead.last_name || splitName(lead.full_name || "").lastName || "";
-  const club = (lead.club && lead.club.trim()) || "your club";
+  const club = cleanClubName(lead.club ?? "") || "your club";
   const positions = (lead.positions && lead.positions.trim()) || "soccer";
   const gradYearStr = lead.grad_year ? String(lead.grad_year) : "your class";
   const angle = gradYearAngle(lead.grad_year ?? null);

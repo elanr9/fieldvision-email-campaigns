@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-import { splitName } from "../_shared/personalize.ts";
+import { cleanClubName, splitName } from "../_shared/personalize.ts";
 
 type Row = {
   full_name?: string;
@@ -70,7 +70,7 @@ serve(async (req: Request) => {
         last_name: lastName || null,
         email,
         phone: strOrNull(row.phone_number),
-        club: strOrNull(row.current_team),
+        club: cleanClubName(strOrNull(row.current_team) ?? "") || null,
         league: strOrNull(row.league),
         grad_year: toInt(row.graduation_year),
         gpa: toNum(row.gpa),
