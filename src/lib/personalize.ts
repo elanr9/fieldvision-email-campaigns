@@ -68,10 +68,12 @@ const SCHOOLS_BY_TIER: Record<GpaTier, string[]> = {
 };
 
 // Club names must never include age group, birth year, gender, or league
-// suffixes (e.g. "Boston Bolts (U18/U19)" -> "Boston Bolts").
+// suffixes (e.g. "Boston Bolts (U18/U19)" -> "Boston Bolts"), and only the first
+// name of a club/school pair is used ("Blackrock FC / Northwood School").
 export function cleanClubName(raw: string): string {
   return raw
     .replace(/\s*\([^)]*\)\s*/g, " ")
+    .replace(/\s*\/.*$/, "")
     .replace(
       /\s+(ECNL|ECRL|ECML|MLS\s*Next|NPL|GA|DPL|Boys|Girls|[BG]\d{2,4}|\d{2}[BG]|U\d{1,2}|(?:19|20)\d{2}(?:\/\d{2,4})?|\d{2}\/\d{2}|\d{2})\b.*$/i,
       "",
@@ -79,6 +81,14 @@ export function cleanClubName(raw: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+// Some leads only have a showcase roster label ("Showcase - GREEN 1") instead of a
+// real club, so the email references the showcase itself rather than the label.
+export function isShowcaseClub(raw: string | null | undefined): boolean {
+  return /\bshowcase\b/i.test(raw ?? "");
+}
+
+const CLUB_MENTION = /(?:at\s+a\s+showcase\s+)?(?:with|for|from|at)\s+\{\{\s*club\s*\}\}/gi;
 
 export function splitName(fullName: string): { firstName: string; lastName: string } {
   const trimmed = (fullName ?? "").trim().replace(/\s+/g, " ");
@@ -209,15 +219,17 @@ export function renderEmail(
     splitName(lead.full_name || "").firstName ||
     "there";
   const lastName = lead.last_name || splitName(lead.full_name || "").lastName || "";
-  const club = cleanClubName(lead.club ?? "") || "your club";
+  const showcaseOnly = isShowcaseClub(lead.club);
+  const club = showcaseOnly ? "a college showcase" : cleanClubName(lead.club ?? "") || "your club";
+  const clubContext = showcaseOnly ? "what we saw at the showcase" : `${club} background`;
   const positions = (lead.positions && lead.positions.trim()) || "soccer";
   const gradYearStr = lead.grad_year ? String(lead.grad_year) : "your class";
   const angle = gradYearAngle(lead.grad_year ?? null);
   const topFive = schools.slice(0, 5).join(", ");
   const gpaLine =
     lead.gpa != null && !Number.isNaN(lead.gpa)
-      ? `With your ${lead.gpa} GPA and ${club} background you could have a real conversation with programs like ${topFive}.`
-      : `With your ${club} background you could start with programs like ${topFive} and then narrow the list by academics.`;
+      ? `With your ${lead.gpa} GPA and ${clubContext} you could have a real conversation with programs like ${topFive}.`
+      : `With your ${clubContext} you could start with programs like ${topFive} and then narrow the list by academics.`;
   const schoolsList = schools.map((school, i) => `${i + 1}. ${school}`).join("\n");
 
   const tokens: Record<string, string> = {
@@ -236,10 +248,12 @@ export function renderEmail(
     age_group: lead.age_group || "",
   };
 
-  const apply = (text: string): string =>
-    text.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_match, key: string) =>
+  const apply = (text: string): string => {
+    const phrased = showcaseOnly ? text.replace(CLUB_MENTION, "at a college showcase") : text;
+    return phrased.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_match, key: string) =>
       key in tokens ? tokens[key] : ""
     );
+  };
 
   return {
     subject: apply(template.subject),
